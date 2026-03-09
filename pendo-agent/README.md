@@ -86,6 +86,64 @@ Or copy `.env.example` to `.env` in `frontend/`.
 Optional env var:
 - `VITE_API_BASE` (default: `http://localhost:8000`)
 
+## Host It Live
+
+### Option A (Recommended): Render (backend) + Vercel (frontend)
+
+#### 1) Push repo to GitHub
+
+```bash
+cd /path/to/pendo-agent
+git init
+git add .
+git commit -m "Initial pendo-agent prototype"
+git branch -M main
+git remote add origin <your-repo-url>
+git push -u origin main
+```
+
+#### 2) Deploy backend on Render
+
+Render can read `render.yaml` at repo root.
+
+- Create a new Blueprint in Render and connect your GitHub repo.
+- Confirm service `pendo-agent-backend` is detected.
+- Set env vars in Render dashboard:
+  - `MISTRAL_API_KEY` = your key
+  - `FRONTEND_ORIGIN` = your frontend URL (set after Vercel deploy, then update)
+- Deploy and copy backend URL, e.g. `https://pendo-agent-backend.onrender.com`
+
+Health check:
+
+```bash
+curl https://<your-render-backend>/health
+```
+
+#### 3) Deploy frontend on Vercel
+
+- Import the same GitHub repo into Vercel.
+- Set Root Directory to `frontend`.
+- Framework preset: `Vite`.
+- Build command: `npm run build`
+- Output directory: `dist`
+- Add env var:
+  - `VITE_API_BASE` = your Render backend URL
+- Deploy and copy frontend URL, e.g. `https://pendo-agent.vercel.app`
+
+#### 4) Final CORS wiring
+
+- Go back to Render backend env vars.
+- Set `FRONTEND_ORIGIN=https://<your-vercel-frontend>`
+- Redeploy backend.
+
+### Option B: Single host with Docker
+
+You can also deploy backend using any Docker-compatible host (Railway/Fly.io/Render Docker service) with:
+- `backend/Dockerfile`
+- `backend/Procfile`
+- `backend/runtime.txt`
+- `backend/requirements.txt`
+
 ## API Endpoints
 
 ### `POST /optimize-prompt`
@@ -151,3 +209,4 @@ Response:
 ## Notes
 - Guide generation is API-driven through Mistral. If `MISTRAL_API_KEY` is missing/invalid or the API fails, `/generate-guide` returns an error with details.
 - Guide constraints enforced: title under 8 words, message under 40 words, max 5 steps.
+- CORS is controlled with `FRONTEND_ORIGIN` (comma-separated allowed origins).
