@@ -5,52 +5,52 @@ import GuideDisplay from "./components/GuideDisplay";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const SAMPLE_WALKTHROUGH = {
-  original_prompt: "how do i export reports",
+  original_prompt: "help users write better prompts",
   optimized_prompt:
-    "Task: Build a tooltip walkthrough journey for exporting reports in Analytics Dashboard.",
+    "Task: Build a tooltip walkthrough journey that teaches users to turn vague prompts into structured prompts.",
   pendo_context: {
     user_role: "Admin",
-    current_page: "Analytics Dashboard",
-    feature_clicked: "Export Reports",
-    experience_level: "Intermediate",
+    current_page: "Prompt Studio",
+    feature_clicked: "Prompt Optimizer",
+    experience_level: "Beginner",
   },
   guide_output: {
     guide_type: "walkthrough",
-    title: "Export Report",
-    message: "Use this quick tour to export your analytics report.",
+    title: "Prompt Coaching Tour",
+    message: "Learn a five-step method for stronger prompts.",
     steps: [
       {
-        selector: "#nav-analytics",
-        tooltip_title: "Open Analytics",
-        tooltip_body: "Click Analytics to access your report dashboard.",
+        selector: "#prompt-input",
+        tooltip_title: "Start With Draft",
+        tooltip_body: "Type your raw prompt idea here, even if it is vague.",
         position: "right",
-        action: "click",
+        action: "type",
       },
       {
-        selector: "#report-filters-button",
-        tooltip_title: "Set Filters",
-        tooltip_body: "Choose date range and segments before exporting.",
+        selector: "#task-field",
+        tooltip_title: "Define The Task",
+        tooltip_body: "Write one clear task using an action verb like Explain or Generate.",
         position: "bottom",
-        action: "click",
+        action: "type",
       },
       {
-        selector: "#export-reports-btn",
-        tooltip_title: "Start Export",
-        tooltip_body: "Click Export Reports to choose a file format.",
-        position: "left",
-        action: "click",
+        selector: "#context-field",
+        tooltip_title: "Add Context",
+        tooltip_body: "Give product details, user intent, and relevant constraints.",
+        position: "bottom",
+        action: "type",
       },
       {
-        selector: "#export-format-select",
+        selector: "#output-format-field",
         tooltip_title: "Choose Format",
-        tooltip_body: "Select CSV for analysis or PDF for sharing.",
-        position: "bottom",
+        tooltip_body: "Select the output format you want from the model.",
+        position: "left",
         action: "select",
       },
       {
-        selector: "#confirm-export-btn",
-        tooltip_title: "Download File",
-        tooltip_body: "Confirm export to generate and download your report.",
+        selector: "#generate-guide-btn",
+        tooltip_title: "Generate Better Prompt",
+        tooltip_body: "Click Generate to create a structured, high-quality prompt.",
         position: "top",
         action: "click",
       },
@@ -62,11 +62,11 @@ const SAMPLE_WALKTHROUGH = {
 };
 
 const DEMO_SELECTORS = [
-  "#nav-analytics",
-  "#report-filters-button",
-  "#export-reports-btn",
-  "#export-format-select",
-  "#confirm-export-btn",
+  "#prompt-input",
+  "#task-field",
+  "#context-field",
+  "#output-format-field",
+  "#generate-guide-btn",
 ];
 
 function normalizeDemoSteps(steps) {
@@ -98,8 +98,8 @@ function getTooltipStyle(target, position) {
 
   const rect = target.getBoundingClientRect();
   const gap = 12;
-  const width = 280;
-  const height = 160;
+  const width = 300;
+  const height = 180;
 
   let top = rect.bottom + gap;
   let left = rect.left;
@@ -121,6 +121,20 @@ function getTooltipStyle(target, position) {
   return { top: `${top}px`, left: `${left}px` };
 }
 
+function isWeakPrompt(input) {
+  const text = (input || "").trim();
+  if (!text) return false;
+
+  const words = text.split(/\s+/);
+  const hasStructureSignals = /(task:|context:|audience:|constraints:|output)/i.test(text);
+  const hasQuestionDepth = /(for|because|with|using|step|format|example)/i.test(text);
+
+  if (hasStructureSignals) return false;
+  if (words.length < 6) return true;
+  if (text.length < 35 && !hasQuestionDepth) return true;
+  return false;
+}
+
 export default function App() {
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState(null);
@@ -130,6 +144,8 @@ export default function App() {
   const [walkthroughIndex, setWalkthroughIndex] = useState(0);
   const [walkthroughActive, setWalkthroughActive] = useState(false);
   const [tooltipStyle, setTooltipStyle] = useState({ top: "20px", left: "20px" });
+  const [showCoachInvite, setShowCoachInvite] = useState(false);
+  const [dismissedWeakPrompt, setDismissedWeakPrompt] = useState("");
 
   const activeStep = walkthroughActive ? walkthroughSteps[walkthroughIndex] : null;
 
@@ -153,7 +169,32 @@ export default function App() {
     };
   }, [activeStep]);
 
+  useEffect(() => {
+    const weak = isWeakPrompt(prompt);
+
+    if (!weak) {
+      setShowCoachInvite(false);
+      setDismissedWeakPrompt("");
+      return;
+    }
+
+    if (dismissedWeakPrompt === prompt.trim()) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowCoachInvite(true);
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [prompt, dismissedWeakPrompt]);
+
   const onGenerate = async () => {
+    if (isWeakPrompt(prompt) && !showCoachInvite) {
+      setShowCoachInvite(true);
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -184,11 +225,15 @@ export default function App() {
     setWalkthroughActive(false);
   };
 
-  const startWalkthrough = () => {
-    const steps = normalizeDemoSteps(result?.guide_output?.steps || []);
+  const startWalkthroughWithGuide = (guidePayload) => {
+    const steps = normalizeDemoSteps(guidePayload?.guide_output?.steps || []);
     setWalkthroughSteps(steps);
     setWalkthroughIndex(0);
     setWalkthroughActive(true);
+  };
+
+  const startWalkthrough = () => {
+    startWalkthroughWithGuide(result || SAMPLE_WALKTHROUGH);
   };
 
   const nextStep = () => {
@@ -216,9 +261,23 @@ export default function App() {
     }
   };
 
+  const acceptPromptCoaching = () => {
+    const source = result || SAMPLE_WALKTHROUGH;
+    if (!result) {
+      setResult(source);
+    }
+    setShowCoachInvite(false);
+    startWalkthroughWithGuide(source);
+  };
+
+  const dismissPromptCoaching = () => {
+    setShowCoachInvite(false);
+    setDismissedWeakPrompt(prompt.trim());
+  };
+
   return (
     <main className="container">
-      <h1>Pendo Prompt Optimization Agent</h1>
+      <h1>Pendo Prompt guide</h1>
       <PromptInput
         prompt={prompt}
         setPrompt={setPrompt}
@@ -226,67 +285,91 @@ export default function App() {
         onLoadSample={onLoadSample}
         loading={loading}
       />
+
+      {showCoachInvite && (
+        <div className="coach-invite" role="dialog" aria-modal="false">
+          <div>
+            <strong>Need help prompting better?</strong>
+            <p>
+              I noticed this prompt may be too vague. Start a quick guide to learn a stronger
+              prompt structure?
+            </p>
+          </div>
+          <div className="coach-invite-actions">
+            <button onClick={acceptPromptCoaching}>Yes, show me</button>
+            <button className="coach-secondary" onClick={dismissPromptCoaching}>
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
       {error && <div className="error">{error}</div>}
 
       <div className="panel">
         <div className="demo-header">
-          <h2>Demo Pendo Dashboard</h2>
-          <button onClick={startWalkthrough} disabled={!result}>
-            Start Walkthrough
+          <h2>Demo Prompt Coaching Workspace</h2>
+          <button onClick={startWalkthrough}>
+            Start Guide
           </button>
         </div>
         <p className="demo-subtitle">
-          Simulated analytics workspace. Start walkthrough to see tooltip journey in action.
+          Simulated prompt-building screen. Follow the tour to coach users toward better prompts.
         </p>
 
         <div className="demo-shell">
           <aside className="demo-sidebar">
             <div className="demo-logo">Pendo</div>
             <button id="nav-home" className="demo-nav-btn">Home</button>
-            <button
-              id="nav-analytics"
-              className="demo-nav-btn"
-              onClick={() => handleTargetInteraction("#nav-analytics")}
-            >
-              Analytics
-            </button>
+            <button id="nav-prompt-coach" className="demo-nav-btn">Prompt Coach</button>
             <button id="nav-guides" className="demo-nav-btn">Guides</button>
           </aside>
 
           <section className="demo-main">
-            <div className="demo-toolbar">
-              <button
-                id="report-filters-button"
-                onClick={() => handleTargetInteraction("#report-filters-button")}
-              >
-                Filters
-              </button>
-              <button
-                id="export-reports-btn"
-                onClick={() => handleTargetInteraction("#export-reports-btn")}
-              >
-                Export Reports
-              </button>
+            <div className="demo-form-grid">
+              <label htmlFor="prompt-input">Raw User Prompt</label>
+              <textarea
+                id="prompt-input"
+                rows={3}
+                placeholder="e.g. write better onboarding message"
+                onChange={() => handleTargetInteraction("#prompt-input", "type")}
+              />
+
+              <label htmlFor="task-field">Task</label>
+              <input
+                id="task-field"
+                type="text"
+                placeholder="Explain how to onboard first-time users"
+                onChange={() => handleTargetInteraction("#task-field", "type")}
+              />
+
+              <label htmlFor="context-field">Context</label>
+              <textarea
+                id="context-field"
+                rows={2}
+                placeholder="SaaS analytics product, onboarding checklist available"
+                onChange={() => handleTargetInteraction("#context-field", "type")}
+              />
+
+              <label htmlFor="output-format-field">Output Format</label>
               <select
-                id="export-format-select"
-                defaultValue="CSV"
-                onChange={() => handleTargetInteraction("#export-format-select", "select")}
+                id="output-format-field"
+                defaultValue="Step-by-step"
+                onChange={() => handleTargetInteraction("#output-format-field", "select")}
               >
-                <option>CSV</option>
-                <option>PDF</option>
+                <option>Step-by-step</option>
+                <option>Tooltip Walkthrough</option>
+                <option>Checklist</option>
               </select>
-              <button
-                id="confirm-export-btn"
-                onClick={() => handleTargetInteraction("#confirm-export-btn")}
-              >
-                Confirm Export
-              </button>
             </div>
 
-            <div className="demo-cards">
-              <div className="demo-card">Active Users: 4,218</div>
-              <div className="demo-card">Feature Adoption: 68%</div>
-              <div className="demo-card">Guide Completion: 74%</div>
+            <div className="demo-toolbar">
+              <button id="optimize-prompt-btn">Optimize Prompt</button>
+              <button
+                id="generate-guide-btn"
+                onClick={() => handleTargetInteraction("#generate-guide-btn")}
+              >
+                Generate Guide
+              </button>
             </div>
           </section>
         </div>

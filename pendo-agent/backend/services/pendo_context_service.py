@@ -6,16 +6,17 @@ class PendoContextService:
     def get_simulated_context() -> dict[str, Any]:
         return {
             "user_role": "Admin",
-            "current_page": "Analytics Dashboard",
-            "feature_clicked": "Export Reports",
-            "experience_level": "Intermediate",
+            "current_page": "Prompt Studio",
+            "feature_clicked": "Prompt Optimizer",
+            "experience_level": "Beginner",
             "account_tier": "Enterprise",
-            "last_action": "Opened report filters",
+            "last_action": "Entered a vague prompt",
             "ui_selectors": {
-                "reports_tab": "#nav-analytics",
-                "export_button": "#export-reports-btn",
-                "format_dropdown": "#export-format-select",
-                "confirm_button": "#confirm-export-btn",
+                "prompt_input": "#prompt-input",
+                "task_field": "#task-field",
+                "context_field": "#context-field",
+                "output_format_field": "#output-format-field",
+                "generate_button": "#generate-guide-btn",
             },
         }
 

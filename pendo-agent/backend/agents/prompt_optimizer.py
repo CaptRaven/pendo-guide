@@ -14,10 +14,10 @@ class PromptOptimizer:
         page = context.get("current_page") if context else "the product dashboard"
 
         return (
-            f"Task: Build a tooltip walkthrough journey for {feature} in {page}.\n"
-            f"Context: User needs in-app tooltip guidance with ordered UI steps to complete the feature successfully.\n"
+            f"Task: Build a tooltip walkthrough journey that teaches users to write better prompts for {feature} in {page}.\n"
+            f"Context: User needs in-app coaching to turn vague prompts into structured prompts (Task, Context, Audience, Constraints, Output Format).\n"
             f"Audience: {role}.\n"
-            "Constraints: Maximum 5 tooltip steps, concise copy, realistic selectors, avoid jargon.\n"
+            "Constraints: Maximum 5 tooltip steps, concise copy, realistic selectors, avoid jargon, include practical prompting tips.\n"
             "Output Format: JSON with guide_type, title, message, steps where each step has selector, tooltip_title, tooltip_body, position, action."
         )
 

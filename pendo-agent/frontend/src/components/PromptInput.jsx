@@ -5,7 +5,7 @@ export default function PromptInput({ prompt, setPrompt, onGenerate, onLoadSampl
       <textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="e.g., how do i export reports"
+        placeholder="e.g., make onboarding better"
         rows={4}
       />
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
