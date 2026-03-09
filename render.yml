@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: pendo-agent-backend
+    env: python
+    rootDir: pendo-agent/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    plan: free
+    envVars:
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: MISTRAL_MODEL
+        value: mistral-small-latest
+      - key: MISTRAL_BASE_URL
+        value: https://api.mistral.ai/v1
+      - key: FRONTEND_ORIGIN
+        sync: false
