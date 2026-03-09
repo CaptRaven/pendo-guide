@@ -3,6 +3,22 @@ from typing import Any
 
 class ResponseCritic:
     @staticmethod
+    def _steps_text(steps: list[Any]) -> str:
+        parts: list[str] = []
+        for step in steps:
+            if isinstance(step, dict):
+                parts.extend(
+                    [
+                        str(step.get("selector", "")),
+                        str(step.get("tooltip_title", "")),
+                        str(step.get("tooltip_body", "")),
+                    ]
+                )
+            else:
+                parts.append(str(step))
+        return " ".join(parts)
+
+    @staticmethod
     def _score_clarity(guide: dict[str, Any]) -> int:
         title = guide.get("title", "")
         message = guide.get("message", "")
@@ -16,7 +32,7 @@ class ResponseCritic:
     @staticmethod
     def _score_relevance(guide: dict[str, Any], context: dict[str, Any]) -> int:
         combined = " ".join(
-            [guide.get("title", ""), guide.get("message", ""), " ".join(guide.get("steps", []))]
+            [guide.get("title", ""), guide.get("message", ""), ResponseCritic._steps_text(guide.get("steps", []))]
         ).lower()
         hits = 0
         for key in ["current_page", "feature_clicked", "user_role"]:
@@ -32,8 +48,18 @@ class ResponseCritic:
     @staticmethod
     def _score_completeness(guide: dict[str, Any]) -> int:
         steps = guide.get("steps", [])
-        if 2 <= len(steps) <= 5:
+        if not isinstance(steps, list):
+            return 1
+
+        well_formed = 0
+        for step in steps:
+            if isinstance(step, dict) and step.get("tooltip_body") and step.get("selector"):
+                well_formed += 1
+
+        if 2 <= len(steps) <= 5 and well_formed == len(steps):
             return 3
+        if 2 <= len(steps) <= 5:
+            return 2
         if len(steps) == 1:
             return 2
         return 1

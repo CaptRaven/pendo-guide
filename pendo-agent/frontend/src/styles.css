@@ -13,7 +13,7 @@ body {
 }
 
 .container {
-  max-width: 980px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 24px;
 }
@@ -21,7 +21,7 @@ body {
 .panel {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -41,13 +41,18 @@ textarea {
   margin-bottom: 12px;
 }
 
-button {
+button,
+select {
   background: #0f766e;
   color: #fff;
   border: none;
   border-radius: 8px;
   padding: 10px 14px;
   cursor: pointer;
+}
+
+select {
+  appearance: none;
 }
 
 button:disabled {
@@ -68,4 +73,116 @@ pre {
   border-radius: 8px;
   padding: 10px;
   margin-bottom: 16px;
+}
+
+.demo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.demo-subtitle {
+  margin: 8px 0 16px;
+  color: #475569;
+}
+
+.demo-shell {
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 320px;
+}
+
+.demo-sidebar {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.demo-logo {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.demo-nav-btn {
+  text-align: left;
+  background: #1e293b;
+}
+
+.demo-main {
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.demo-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.demo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.demo-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.walkthrough-target-active {
+  outline: 3px solid #f59e0b;
+  box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.25);
+  position: relative;
+  z-index: 20;
+}
+
+.walkthrough-tooltip {
+  position: fixed;
+  z-index: 50;
+  width: 280px;
+  background: #111827;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 20px 45px rgba(2, 6, 23, 0.35);
+}
+
+.walkthrough-tooltip h3 {
+  margin: 4px 0 8px;
+}
+
+.walkthrough-step-index,
+.walkthrough-target-text {
+  margin: 0;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.walkthrough-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.walkthrough-actions button {
+  background: #1d4ed8;
+  padding: 8px 10px;
+}
+
+@media (max-width: 800px) {
+  .demo-shell {
+    grid-template-columns: 1fr;
+  }
 }

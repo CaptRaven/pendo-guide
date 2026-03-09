@@ -23,12 +23,38 @@ class LLMService:
 
     @staticmethod
     def _normalize_guide(raw: dict[str, Any]) -> dict[str, Any]:
+        guide_type = str(raw.get("guide_type", "walkthrough")).strip() or "walkthrough"
         title = str(raw.get("title", "")).strip()
         message = str(raw.get("message", "")).strip()
         steps = raw.get("steps", [])
         if not isinstance(steps, list):
-            steps = [str(steps)]
-        steps = [str(s).strip() for s in steps if str(s).strip()][:5]
+            steps = [steps]
+
+        normalized_steps: list[dict[str, str]] = []
+        for step in steps[:5]:
+            if isinstance(step, dict):
+                selector = str(step.get("selector", "")).strip()
+                tooltip_title = str(step.get("tooltip_title", "")).strip()
+                tooltip_body = str(step.get("tooltip_body", "")).strip()
+                position = str(step.get("position", "auto")).strip() or "auto"
+                action = str(step.get("action", "click")).strip() or "click"
+            else:
+                selector = ""
+                tooltip_title = ""
+                tooltip_body = str(step).strip()
+                position = "auto"
+                action = "click"
+
+            if tooltip_body:
+                normalized_steps.append(
+                    {
+                        "selector": selector,
+                        "tooltip_title": tooltip_title,
+                        "tooltip_body": tooltip_body,
+                        "position": position,
+                        "action": action,
+                    }
+                )
 
         title_words = title.split()
         if len(title_words) > 8:
@@ -38,7 +64,12 @@ class LLMService:
         if len(message_words) > 40:
             message = " ".join(message_words[:40])
 
-        return {"title": title, "message": message, "steps": steps}
+        return {
+            "guide_type": guide_type,
+            "title": title,
+            "message": message,
+            "steps": normalized_steps,
+        }
 
     async def generate_guide(self, prompt_with_context: str) -> dict[str, Any]:
         if not self.api_key:
@@ -48,7 +79,9 @@ class LLMService:
 
         system_prompt = (
             "You create Pendo In-App Guide content. Output strict JSON only, no markdown. "
-            "JSON schema: {\"title\": string, \"message\": string, \"steps\": string[]}. "
+            "JSON schema: {\"guide_type\": \"walkthrough\", \"title\": string, \"message\": string, "
+            "\"steps\": [{\"selector\": string, \"tooltip_title\": string, \"tooltip_body\": string, "
+            "\"position\": string, \"action\": string}]}. "
             "Constraints: title under 8 words, message under 40 words, max 5 steps."
         )
 

@@ -185,14 +185,24 @@ Response:
   "optimized_prompt": "...",
   "pendo_context": {"...": "..."},
   "guide_output": {
+    "guide_type": "walkthrough",
     "title": "Export Reports Quickly",
-    "message": "Follow these steps to export analytics reports from the dashboard.",
+    "message": "Follow this walkthrough to export analytics reports.",
     "steps": [
-      "Open the Analytics Dashboard.",
-      "Apply the report filters you need.",
-      "Click Export Reports in the top toolbar.",
-      "Choose CSV or PDF format.",
-      "Confirm and download the file."
+      {
+        "selector": "#nav-analytics",
+        "tooltip_title": "Open Analytics",
+        "tooltip_body": "Click Analytics to open the reports dashboard.",
+        "position": "right",
+        "action": "click"
+      },
+      {
+        "selector": "#export-reports-btn",
+        "tooltip_title": "Start Export",
+        "tooltip_body": "Select Export Reports to begin file export.",
+        "position": "bottom",
+        "action": "click"
+      }
     ]
   },
   "critic_score": 8,
@@ -208,5 +218,5 @@ Response:
 
 ## Notes
 - Guide generation is API-driven through Mistral. If `MISTRAL_API_KEY` is missing/invalid or the API fails, `/generate-guide` returns an error with details.
-- Guide constraints enforced: title under 8 words, message under 40 words, max 5 steps.
+- Guide constraints enforced: title under 8 words, message under 40 words, max 5 tooltip steps.
 - CORS is controlled with `FRONTEND_ORIGIN` (comma-separated allowed origins).

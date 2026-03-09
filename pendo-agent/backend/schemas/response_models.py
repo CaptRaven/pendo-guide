@@ -3,10 +3,19 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class GuideStep(BaseModel):
+    selector: str = Field(default="")
+    tooltip_title: str = Field(default="")
+    tooltip_body: str = Field(default="")
+    position: str = Field(default="auto")
+    action: str = Field(default="click")
+
+
 class GuideOutput(BaseModel):
+    guide_type: str = Field(default="walkthrough")
     title: str = Field(default="")
     message: str = Field(default="")
-    steps: list[str] = Field(default_factory=list)
+    steps: list[GuideStep] = Field(default_factory=list)
 
 
 class OptimizePromptResponse(BaseModel):
