@@ -11,11 +11,13 @@ frontend_origin_env = os.getenv("FRONTEND_ORIGIN", "*")
 allowed_origins = [o.strip() for o in frontend_origin_env.split(",") if o.strip()]
 if not allowed_origins:
     allowed_origins = ["*"]
+use_wildcard = "*" in allowed_origins
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    # Browsers reject credentialed CORS with wildcard origin.
+    allow_credentials=not use_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )
